@@ -3,10 +3,22 @@
 class DES {
 public:
   DES() = default;  // Constructor por defecto, no hace nada
-  DES(const bitset<64>& key);  // Constructor que recibe una clave de 64 bits
+  DES(const bitset<64>& key) : key(key) {
+    generateSubkeys();  // Genera las subclaves al inicializar la clave
+  }
   ~DES() = default;  // Destructor, no hace nada
 
 
+
+  void generateSubkeys() {
+    // Genera las subclaves a partir de la clave original de 64 bits
+// Aquí se debería implementar la lógica para generar las 16 subclaves de 48 bits
+// a partir de la clave de 64 bits, pero por simplicidad, no se implementa aquí.
+    for (int i = 0; i < 16; i++) {
+      bitset<48> subkey((key.to_ullong() >> 1) & 0xFFFFFFFFFFFF);  // Crea una subclave de 48 bits (inicialmente vacía)
+      subkeys.push_back(subkey);  // Agrega subclaves vacías (esto es solo un ejemplo)
+    }
+  }
 
   // 1. iPermutation: Este método hace el primer cambio en los datos (texto claro) 
   // antes de empezar a cifrarlos. La permutación reorganiza los bits del texto.
@@ -116,6 +128,16 @@ public:
 
     // Devolvemos el resultado, que es un conjunto de 32 bits reorganizados
     return output;  // Los 32 bits están ahora en el nuevo orden
+  }
+
+  bitset<64>
+    fPremutation(const bitset<64>& input) {
+    bitset<64> output;  // Creamos un nuevo bitset para guardar el resultado de la permutación
+    for (int i = 0; i < 64; i++)
+    {
+      output[i] = input[i];  // Copia los bits de 'input' a 'output' (esto es solo una reorganización)
+    }
+    return output;
   }
 
 

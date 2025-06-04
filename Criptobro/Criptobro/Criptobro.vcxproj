@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{971c6fcf-98fd-4008-8410-18ea996fff84}</ProjectGuid>
-    <RootNamespace>Criptoanalisis</RootNamespace>
+    <ProjectGuid>{410ff7d1-3e58-442c-b827-8179c0246fbf}</ProjectGuid>
+    <RootNamespace>Criptobro</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -127,13 +127,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ASCII.h" />
-    <ClInclude Include="Include\DES.h" />
-    <ClInclude Include="Include\Prerequisites.h" />
-    <ClInclude Include="LiruSisaEncrypton.h" />
+    <ClInclude Include="..\..\..\Criptobro\Criptoanalisis\Include\ASCII.h" />
+    <ClInclude Include="..\..\..\Criptobro\Criptoanalisis\Include\DES.h" />
+    <ClInclude Include="..\..\..\Criptobro\Criptoanalisis\Include\LiruSisaEncrypton.h" />
+    <ClInclude Include="..\..\..\Criptobro\Criptoanalisis\Include\Prerequisites.h" />
+    <ClInclude Include="..\..\..\Criptobro\Criptoanalisis\Include\XOR.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="..\..\..\Criptobro\Criptoanalisis\Source\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
