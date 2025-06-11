@@ -15,24 +15,24 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Criptobro\Criptoanalisis\Include\ASCII.h">
+    <ClInclude Include="Include\ASCII.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Criptobro\Criptoanalisis\Include\DES.h">
+    <ClInclude Include="Include\DES.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Criptobro\Criptoanalisis\Include\LiruSisaEncrypton.h">
+    <ClInclude Include="Include\LiruSisaEncrypton.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Criptobro\Criptoanalisis\Include\Prerequisites.h">
+    <ClInclude Include="Include\Prerequisites.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Criptobro\Criptoanalisis\Include\XOR.h">
+    <ClInclude Include="Include\XOR.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Criptobro\Criptoanalisis\Source\main.cpp">
+    <ClCompile Include="Source\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

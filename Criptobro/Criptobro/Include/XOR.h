@@ -1,114 +1,156 @@
 #pragma once
 #include "Prerequisites.h"
 
+/**
+ * @class XOREncoder
+ * @brief Clase para cifrado y descifrado de texto utilizando el algoritmo XOR.
+ *
+ * Soporta cifrado simétrico, impresión en hexadecimal, y ataques de fuerza bruta
+ * de 1 byte, 2 bytes o por diccionario. Permite convertir y validar datos cifrados.
+ */
 class XOREncoder {
 public:
   XOREncoder() = default;
   ~XOREncoder() = default;
 
-  // Método para cifrar el texto usando XOR con una clave proporcionada
-  // Input: La cadena que se quiere cifrar. -> "Hola Mundo"
-  // Key: La clave a utilizar para el cifrado. -> "clave"
-  string encode(const string& input, const string& key) {
-    string output = input;
+  /**
+   * @brief Cifra una cadena de texto utilizando una clave mediante operación XOR.
+   *
+   * @param input Texto a cifrar.
+   * @param key Clave de cifrado.
+   * @return Texto cifrado como string.
+   */
+  std::string encode(const std::string& input, const std::string& key) {
+    std::string output = input;
     for (int i = 0; i < input.size(); i++) {
-      output[i] = input[i] ^ key[i % key.size()];  // Aplica el XOR entre el texto y la clave
+      output[i] = input[i] ^ key[i % key.size()];
     }
     return output;
   }
 
-  // Convierte un texto hexadecimal a su representación en bytes
-  vector<unsigned char> HexToBytes(const string& input) {
-    vector<unsigned char> bytes;
-    istringstream iss(input);
-    string hexValue;
+  /**
+   * @brief Convierte una cadena hexadecimal a un vector de bytes.
+   *
+   * @param input Cadena en formato hexadecimal.
+   * @return Vector de bytes representando los datos.
+   */
+  std::vector<unsigned char> HexToBytes(const std::string& input) {
+    std::vector<unsigned char> bytes;
+    std::istringstream iss(input);
+    std::string hexValue;
 
     while (iss >> hexValue) {
-      if (hexValue.size() == 1) {
-        hexValue = "0" + hexValue;  // Asegura que el valor hexadecimal tenga dos dígitos
-      }
+      if (hexValue.size() == 1) hexValue = "0" + hexValue;
+
       unsigned int byte;
-      stringstream ss;
-      ss << hex << hexValue;
+      std::stringstream ss;
+      ss << std::hex << hexValue;
       ss >> byte;
-      bytes.push_back(static_cast<unsigned char>(byte));  // Convierte a unsigned char y lo guarda
+
+      bytes.push_back(static_cast<unsigned char>(byte));
     }
+
     return bytes;
   }
 
-  // Imprime el texto en formato hexadecimal
-  void printHex(const string& input) {
+  /**
+   * @brief Imprime una cadena en formato hexadecimal.
+   *
+   * @param input Cadena de texto o datos cifrados.
+   */
+  void printHex(const std::string& input) {
     for (unsigned char c : input) {
-      cout << hex << setw(2) << setfill('0') << (int)c << " ";  // Muestra cada byte en formato hexadecimal
+      std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)c << " ";
     }
   }
 
-  // Verifica si el texto contiene solo caracteres imprimibles o espacios
-  bool isValidText(const string& data) {
-    return all_of(data.begin(), data.end(), [](unsigned char c) {
+  /**
+   * @brief Verifica si un texto contiene solo caracteres imprimibles y espacios válidos.
+   *
+   * @param data Texto a validar.
+   * @return `true` si todos los caracteres son válidos, `false` si hay binarios o no imprimibles.
+   */
+  bool isValidText(const std::string& data) {
+    return std::all_of(data.begin(), data.end(), [](unsigned char c) {
       return isprint(c) || isspace(c) || c == '\n' || c == ' ';
       });
   }
 
-  // Fuerza de ataque de 1 byte con XOR
-  void bruteForce_1Byte(const vector<unsigned char>& cifrado) {
+  /**
+   * @brief Ejecuta fuerza bruta con todas las posibles claves de 1 byte.
+   *
+   * @param cifrado Vector de bytes cifrados.
+   */
+  void bruteForce_1Byte(const std::vector<unsigned char>& cifrado) {
     for (int clave = 0; clave < 256; ++clave) {
-      string result;
-
+      std::string result;
       for (unsigned char c : cifrado) {
-        result += static_cast<unsigned char>(c ^ clave);  // Realiza el XOR con cada byte
+        result += static_cast<unsigned char>(c ^ clave);
       }
 
       if (isValidText(result)) {
-        cout << "=============================\n";
-        cout << "Clave 1 byte  : '" << static_cast<char>(clave)
-          << "' (0x" << hex << setw(2) << setfill('0') << clave << ")\n";
-        cout << "Texto posible : " << result << "\n";
+        std::cout << "=============================\n";
+        std::cout << "Clave 1 byte  : '" << static_cast<char>(clave)
+          << "' (0x" << std::hex << std::setw(2) << std::setfill('0') << clave << ")\n";
+        std::cout << "Texto posible : " << result << "\n";
       }
     }
   }
 
-  // Fuerza de ataque de 2 bytes con XOR
-  void bruteForce_2Byte(const vector<unsigned char>& cifrado) {
+  /**
+   * @brief Ejecuta fuerza bruta probando todas las combinaciones posibles de claves de 2 bytes.
+   *
+   * @param cifrado Vector de bytes cifrados.
+   */
+  void bruteForce_2Byte(const std::vector<unsigned char>& cifrado) {
     for (int b1 = 0; b1 < 256; ++b1) {
       for (int b2 = 0; b2 < 256; ++b2) {
-        string result;
-        unsigned char key[2] = { static_cast<unsigned char>(b1), static_cast<unsigned char>(b2) };
+        std::string result;
+        unsigned char key[2] = {
+            static_cast<unsigned char>(b1),
+            static_cast<unsigned char>(b2)
+        };
 
         for (int i = 0; i < cifrado.size(); i++) {
-          result += cifrado[i] ^ key[i % 2];  // Realiza el XOR con cada byte usando los dos bytes de clave
+          result += cifrado[i] ^ key[i % 2];
         }
 
         if (isValidText(result)) {
-          cout << "=============================\n";
-          cout << "Clave 2 bytes : '" << static_cast<char>(b1) << static_cast<char>(b2)
-            << "' (0x" << hex << setw(2) << setfill('0') << b1
-            << " 0x" << setw(2) << setfill('0') << b2 << ")\n";
-          cout << "Texto posible : " << result << "\n";
+          std::cout << "=============================\n";
+          std::cout << "Clave 2 bytes : '" << static_cast<char>(b1) << static_cast<char>(b2)
+            << "' (0x" << std::hex << std::setw(2) << std::setfill('0') << b1
+            << " 0x" << std::setw(2) << std::setfill('0') << b2 << ")\n";
+          std::cout << "Texto posible : " << result << "\n";
         }
       }
     }
   }
 
-  // Fuerza de ataque utilizando un diccionario de claves comunes
-  void bruteForceByDictionary(const vector<unsigned char>& cifrado) {
-    vector<string> clavesComunes = {
-        "clave", "admin", "1234", "root", "test", "abc", "hola", "user",
-        "pass", "12345", "0000", "password", "default"
+  /**
+   * @brief Realiza ataque de fuerza bruta con un diccionario de claves comunes.
+   *
+   * @param cifrado Vector de bytes cifrados.
+   */
+  void bruteForceByDictionary(const std::vector<unsigned char>& cifrado) {
+    std::vector<std::string> clavesComunes = {
+      "clave", "admin", "1234", "root", "test", "abc", "hola", "user",
+      "pass", "12345", "0000", "password", "default"
     };
 
     for (const auto& clave : clavesComunes) {
-      string result;
+      std::string result;
       for (int i = 0; i < cifrado.size(); i++) {
-        result += static_cast<unsigned char>(cifrado[i] ^ clave[i % clave.size()]);  // XOR con cada palabra del diccionario
+        result += static_cast<unsigned char>(cifrado[i] ^ clave[i % clave.size()]);
       }
+
       if (isValidText(result)) {
-        cout << "=============================\n";
-        cout << "Clave de diccionario: '" << clave << "'\n";
-        cout << "Texto posible : " << result << "\n";
+        std::cout << "=============================\n";
+        std::cout << "Clave de diccionario: '" << clave << "'\n";
+        std::cout << "Texto posible : " << result << "\n";
       }
     }
   }
+
 private:
-  // Aquí podrían ir otras funciones privadas si fueran necesarias
+  // Espacio reservado para métodos internos adicionales si se requiere.
 };
