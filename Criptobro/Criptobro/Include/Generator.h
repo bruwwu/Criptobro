@@ -6,19 +6,19 @@
 * @brief Generates cryptographically secure passwords, keys, IVs and salts, and provides encryption (hex/Base64) and memory cleaning utilities.
 */
 class
-  CryptoGenerator {
+  Generator {
 public:
   /**
   * @class Class constructor
   * @brief Initializes the Mersenne Twister engine with seed extracted from
   * std::random_device to guarantee cryptographic entropy.
   */
-  CryptoGenerator() {
+  Generator() {
     std::random_device rd; // Random number generation device with high entropy.
     m_engine.seed(rd()); // Seed of the Mersenne Twister engine with the entropy of the device.
   }
 
-  ~CryptoGenerator() = default;
+  ~Generator() = default;
 
   /**More actions
   * @brief Generates a random password.

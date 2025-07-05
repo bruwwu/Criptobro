@@ -1,25 +1,33 @@
 #include "Prerequisites.h"
-#include "Vinegere.h"
+#include "Generator.h"
 
 int main() {
-  // 1) Crear una clave de Vigenère
-  std::string key = "SECRETMESSAGE";  // Esta es la clave que se usará para cifrar y descifrar
-  Vignere vignere(key);
+  Generator cryptoGen;
 
-  // 2) Texto que será cifrado
-  std::string plaintext = "HOLA MUNDO";
+  // 1) Generar un conjunto de contraseñas
+  std::vector<std::string> passwords;
+  for (int i = 0; i < 10; ++i) {  // Generamos 10 contraseñas para este ejemplo
+    passwords.push_back(cryptoGen.generatePassword(16));
+  }
 
-  // 3) Cifrar el texto usando la clave
-  std::string ciphertext = vignere.encode(plaintext);
-  std::cout << "Texto Cifrado: " << ciphertext << std::endl;
+  // 2) Evaluar la fuerza de cada contraseña
+  std::vector<std::pair<std::string, std::string>> passwordStrengths;  // (Contraseña, Fuerza)
+  for (const auto& password : passwords) {
+    std::string strength = cryptoGen.passwordStrength(password);
+    passwordStrengths.push_back({ password, strength });
+  }
 
-  // 4) Descifrar el texto usando la misma clave
-  std::string decryptedText = vignere.decode(ciphertext);
-  std::cout << "Texto Descifrado: " << decryptedText << std::endl;
+  // 3) Ordenar las contraseñas por su fuerza (de más fuerte a más débil)
+  std::sort(passwordStrengths.begin(), passwordStrengths.end(),
+    [](const std::pair<std::string, std::string>& a, const std::pair<std::string, std::string>& b) {
+      return a.second > b.second;  // Ordenar de mayor a menor fuerza
+    });
 
-  // 5) Probar un ataque de fuerza bruta para romper el cifrado
-  std::string crackedKey = vignere.breakBruteForce(ciphertext);
-  std::cout << "Clave Encontrada: " << crackedKey << std::endl;
+  // 4) Mostrar las tres contraseñas más fuertes
+  std::cout << "Las 3 contraseñas más fuertes son:\n";
+  for (int i = 0; i < 3; ++i) {
+    std::cout << "Contraseña: " << passwordStrengths[i].first << " | Fuerza: " << passwordStrengths[i].second << std::endl;
+  }
 
   return 0;
 }
