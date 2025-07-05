@@ -1,13 +1,16 @@
 #pragma once
-// STD Libraries
-#include <iostream>
-#include <sstream>
+
+#include <iostream> 
+#include <string> 
 #include <vector>
-#include <string>
+#include <sstream>
 #include <iomanip>
 #include <cctype>
 #include <algorithm>
 #include <bitset>
-#include <functional> 
-#include <stdexcept>
+#include <functional>
 #include <random>
+#include <mutex>
+#include <array>
+
+#include <fstream> //Para leer los txt

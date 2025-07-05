@@ -1,25 +1,25 @@
 #include "Prerequisites.h"
-#include "CryptoGenerator.h"
+#include "Vinegere.h"
 
 int main() {
-	// 1) Generar una contraseña de 16 caracteres (mayúsculas, minúsculas, dígitos)
-	CryptoGenerator cryptoGen;
-	cryptoGen.generatePassword(16); // Generate a password of length 16
+  // 1) Crear una clave de Vigenère
+  std::string key = "SECRETMESSAGE";  // Esta es la clave que se usará para cifrar y descifrar
+  Vignere vignere(key);
 
-	// 2) Generar 16 bytes aleatorios genéricos
-	auto randomBytes = cryptoGen.generateBytes(16);
-	std::cout << "Random Bytes (hex): " << cryptoGen.toHex(randomBytes) << std::endl;
+  // 2) Texto que será cifrado
+  std::string plaintext = "HOLA MUNDO";
 
-	// 3) Clave AES de 128 bits
-	auto key128 = cryptoGen.generateKey(128);
-	std::cout << "Key 128-bit (hex): " << cryptoGen.toHex(key128) << std::endl;
+  // 3) Cifrar el texto usando la clave
+  std::string ciphertext = vignere.encode(plaintext);
+  std::cout << "Texto Cifrado: " << ciphertext << std::endl;
 
-	// 4) IV de 128 bits (16 bytes)
-	auto iv = cryptoGen.generateIV(16);
-	std::cout << "IV 128-bit (hex): " << cryptoGen.toHex(iv) << "\n";
+  // 4) Descifrar el texto usando la misma clave
+  std::string decryptedText = vignere.decode(ciphertext);
+  std::cout << "Texto Descifrado: " << decryptedText << std::endl;
 
-	// 5) Salt de 16 bytes
-	auto salt = cryptoGen.generateSalt(16);
-	std::cout << "Salt (Base64): " << cryptoGen.toBase64(salt) << "\n";
-	return 0;
+  // 5) Probar un ataque de fuerza bruta para romper el cifrado
+  std::string crackedKey = vignere.breakBruteForce(ciphertext);
+  std::cout << "Clave Encontrada: " << crackedKey << std::endl;
+
+  return 0;
 }

@@ -134,6 +134,7 @@
     <ClInclude Include="CryptoGenerator.h" />
     <ClInclude Include="Include\ASCII.h" />
     <ClInclude Include="Include\DES.h" />
+    <ClInclude Include="Include\Generator.h" />
     <ClInclude Include="Include\Vinegere.h" />
     <ClInclude Include="Include\LiruSisaEncrypton.h" />
     <ClInclude Include="Include\Prerequisites.h" />
