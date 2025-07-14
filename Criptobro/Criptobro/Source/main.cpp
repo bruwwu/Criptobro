@@ -1,33 +1,225 @@
-#include "Prerequisites.h"
-#include "Generator.h"
+﻿// main.cpp
+#include "FileIO.h"               // lectura/escritura + fix de directorios
+#include "LiruSisaEncrypton.h"    // César
+#include "XOR.h"                  // XOR
+#include "Vinegere.h"             // Vigenère
+#include "DES.h"                  // DES
 
-int main() {
-  Generator cryptoGen;
+#include <bitset>
+#include <iostream>
+#include <filesystem>
 
-  // 1) Generar un conjunto de contrase�as
-  std::vector<std::string> passwords;
-  for (int i = 0; i < 10; ++i) {  // Generamos 10 contrase�as para este ejemplo
-    passwords.push_back(cryptoGen.generatePassword(16));
+namespace fs = std::filesystem;
+
+/* ───── Toggle de trazas debug ───── */
+#define DEBUG_LOG 0
+#if DEBUG_LOG
+#define DBG(x) do { std::cerr << "[DEBUG] " << x << '\n'; } while (0)
+#else
+#define DBG(x)
+#endif
+
+/* ──────────────────────────────────────────────────────────────
+   Carpetas base:   raw/  (archivos originales)
+                    cif/  (archivos cifrados)
+   Ambas se crean al arrancar en la misma carpeta del ejecutable.
+──────────────────────────────────────────────────────────────── */
+const fs::path BASE_DIR = fs::current_path();
+const fs::path RAW_DIR = BASE_DIR / "raw";
+const fs::path CIF_DIR = BASE_DIR / "cif";
+
+/* ───── Helpers DES con clave fija ───── */
+namespace DESUtils {
+  constexpr const char* DES_KEY =
+    "0001001100110100010101110111100110011011101111001101111111110001";
+
+  ::DES makeDES() {
+    const std::bitset<64> bits{ std::string{DES_KEY} };
+    return ::DES(bits);                 // evita most-vexing parse
   }
 
-  // 2) Evaluar la fuerza de cada contrase�a
-  std::vector<std::pair<std::string, std::string>> passwordStrengths;  // (Contrase�a, Fuerza)
-  for (const auto& password : passwords) {
-    std::string strength = cryptoGen.passwordStrength(password);
-    passwordStrengths.push_back({ password, strength });
+  std::string encrypt(const std::string& in) {
+    auto des = makeDES();
+    std::string out;
+    for (size_t i = 0; i < in.size(); i += 8) {
+      std::string block = in.substr(i, 8);
+      if (block.size() < 8) block.append(8 - block.size(), '\0');
+      out += des.bitset64ToString(
+        des.encode(des.stringToBitset64(block)));
+    }
+    return out;
   }
 
-  // 3) Ordenar las contrase�as por su fuerza (de m�s fuerte a m�s d�bil)
-  std::sort(passwordStrengths.begin(), passwordStrengths.end(),
-    [](const std::pair<std::string, std::string>& a, const std::pair<std::string, std::string>& b) {
-      return a.second > b.second;  // Ordenar de mayor a menor fuerza
-    });
+  std::string decrypt(const std::string& in) {
+    auto des = makeDES();
+    std::string out;
+    for (size_t i = 0; i < in.size(); i += 8) {
+      std::string block = in.substr(i, 8);
+      out += des.bitset64ToString(
+        des.decode(des.stringToBitset64(block)));
+    }
+    // quita padding '\0' final (comentarlo si manejas binarios puros)
+    while (!out.empty() && out.back() == '\0') out.pop_back();
+    return out;
+  }
+}
 
-  // 4) Mostrar las tres contrase�as m�s fuertes
-  std::cout << "Las 3 contrase�as m�s fuertes son:\n";
-  for (int i = 0; i < 3; ++i) {
-    std::cout << "Contrase�a: " << passwordStrengths[i].first << " | Fuerza: " << passwordStrengths[i].second << std::endl;
+/* ───── Selección de algoritmo ───── */
+enum class Cipher { CESAR, XORC, VIGENERE, DES };
+
+Cipher askCipher() {
+  int opc;
+  std::cout <<
+    "Elige algoritmo:\n"
+    "  1) César\n"
+    "  2) XOR\n"
+    "  3) Vigenère\n"
+    "  4) DES (64-bit, clave fija)\n> ";
+  std::cin >> opc;
+  return static_cast<Cipher>(opc - 1);
+}
+
+bool askMode() {
+  char c;
+  std::cout << "¿Encrypt (e) o Decrypt (d)? > ";
+  std::cin >> c;
+  return (c == 'e' || c == 'E');
+}
+
+/* Pide solo el nombre de archivo (sin ruta) y lo ubica en raw/ o cif/ */
+fs::path askInputPath(bool encrypting) {
+  std::cout << "Nombre de archivo (sin ruta) > ";
+  std::string name;  std::cin >> name;
+  return (encrypting ? RAW_DIR : CIF_DIR) / name;
+}
+
+/* extensión extra para cada algoritmo */
+std::string extFor(Cipher c) {
+  switch (c) {
+  case Cipher::CESAR:    return ".csr";
+  case Cipher::XORC:     return ".xor";
+  case Cipher::VIGENERE: return ".vig";
+  case Cipher::DES:      return ".des";
+  }
+  return ".bin";
+}
+
+/* ───── Validación rápida: cifrar y descifrar "12345678" ───── */
+bool selfTest(Cipher c) {
+  const std::string sample = "12345678";   // 8 bytes
+  std::string enc, dec;
+
+  switch (c) {
+  case Cipher::CESAR: {
+    CesarEncryption ce; int k = 5;
+    enc = ce.Encryption(sample, k);
+    dec = ce.decode(enc, k);
+    break;
+  }
+  case Cipher::XORC: {
+    XOREncoder xo; std::string key = "K";
+    enc = xo.encode(sample, key);
+    dec = xo.encode(enc, key);        // XOR es reversible
+    break;
+  }
+  case Cipher::VIGENERE: {
+    Vignere v("KEY");
+    enc = v.encode(sample);
+    dec = v.decode(enc);
+    break;
+  }
+  case Cipher::DES: {
+    enc = DESUtils::encrypt(sample);
+    dec = DESUtils::decrypt(enc);
+    break;
+  }
+  }
+  return dec == sample;
+}
+
+/* ───── Main ───── */
+int main() try {
+  std::ios::sync_with_stdio(false);
+
+  /* Asegura carpetas raw/ y cif/ */
+  fs::create_directories(RAW_DIR);
+  fs::create_directories(CIF_DIR);
+
+  Cipher cipher = askCipher();
+  bool encrypting = askMode();
+
+  if (!selfTest(cipher)) {
+    std::cerr << "⛔ Validación interna del algoritmo falló.\n";
+    return 2;
   }
 
+  fs::path inFile = askInputPath(encrypting);
+
+  /* -------- Calcular ruta de salida -------- */
+  const std::string ext = extFor(cipher);
+  fs::path outFile;
+
+  if (encrypting) {                                // raw → cif
+    outFile = CIF_DIR / (inFile.filename().string() + ext);
+  }
+  else {                                         // cif → raw
+    std::string base = inFile.filename().string();
+    if (inFile.extension() == ext)
+      base = inFile.stem().string();               // quita .des/.xor...
+    else
+      base += ".dec";
+    outFile = RAW_DIR / base;
+  }
+
+  std::cout << "Leyendo de : " << inFile << '\n'
+    << "Escribiendo: " << outFile << '\n';
+
+  /* -------- Leer -------- */
+  std::string input = FileIO::readAll(inFile);
+  DBG("bytes leídos : " << input.size());
+
+  /* -------- Procesar -------- */
+  std::string output;
+  switch (cipher) {
+  case Cipher::CESAR: {
+    int shift;
+    std::cout << "Desplazamiento César (int) > ";
+    std::cin >> shift;
+    CesarEncryption ce;
+    output = encrypting ? ce.Encryption(input, shift)
+      : ce.decode(input, shift);
+    break;
+  }
+  case Cipher::XORC: {
+    std::string key;
+    std::cout << "Clave XOR > ";
+    std::cin >> key;
+    XOREncoder xo;
+    output = xo.encode(input, key);   // misma función descifra
+    break;
+  }
+  case Cipher::VIGENERE: {
+    std::string key;
+    std::cout << "Clave Vigenère > ";
+    std::cin >> key;
+    Vignere v(key);
+    output = encrypting ? v.encode(input) : v.decode(input);
+    break;
+  }
+  case Cipher::DES: {
+    output = encrypting ? DESUtils::encrypt(input)
+      : DESUtils::decrypt(input);
+    break;
+  }
+  }
+
+  DBG("bytes a escribir: " << output.size());
+  FileIO::writeAll(outFile, output);
+  std::cout << "✅ Bytes escritos: " << output.size() << '\n';
   return 0;
+
+}
+catch (const std::exception& e) {
+  std::cerr << "⛔ Error: " << e.what() << '\n';
+  return 1;
 }

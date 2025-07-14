@@ -12,5 +12,5 @@
 #include <random>
 #include <mutex>
 #include <array>
-
+#include <filesystem>
 #include <fstream> //Para leer los txt
