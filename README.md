@@ -186,10 +186,4 @@ Clave XOR > MiSecreta123
 
 ---
 
-## 11. Licencia<a name="licencia"></a>
-
-`Criptobro CLI` se distribuye bajo la licencia MIT. Consulta `LICENSE` para más detalles.
-
----
-
 > **¡Listo!** Con este README tienes todo lo necesario para compilar, ejecutar y extender tu herramienta de cifrado.
