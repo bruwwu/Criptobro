@@ -64,16 +64,19 @@ namespace DESUtils {
 }
 
 /* ───── Utilidades hex <-> bin ───── */
-std::string binToHex(const std::string& bin)
-{
+std::string binToHex(const std::string& bin) {
   static const char* d = "0123456789ABCDEF";
-  std::string hex;  hex.reserve(bin.size() * 2);
+  std::string hex;
+  hex.reserve(bin.size() * 3);  // Cada byte se convierte en 2 hex + 1 espacio
   for (unsigned char c : bin) {
-    hex.push_back(d[c >> 4]);
-    hex.push_back(d[c & 0x0F]);
+    hex.push_back(d[c >> 4]);  // Primer nibble
+    hex.push_back(d[c & 0x0F]);  // Segundo nibble
+    hex.push_back(' ');           // Espacio entre los bytes
   }
+  if (!hex.empty()) hex.pop_back(); // Elimina el último espacio extra
   return hex;
 }
+
 
 int hexVal(char ch) {
   return (ch <= '9') ? ch - '0' :
@@ -202,10 +205,21 @@ int main() try {
     break;
   }
   case Cipher::XORC: {
-    std::string key; std::cout << "Clave XOR > "; std::cin >> key;
-    XOREncoder xo; output = xo.encode(input, key);
+    std::string key;
+    std::cout << "Clave XOR > ";
+    std::cin >> key;
+
+    XOREncoder xo;
+    std::string rawOutput = xo.encode(input, key);  // Cifrado en binario
+
+    // Convierte el resultado binario a hexadecimal
+    std::string hexOutput = binToHex(rawOutput);    // Guarda como texto hexadecimal
+
+    // Guardamos el archivo cifrado en formato hexadecimal
+    output = hexOutput;  // Salida en formato hex
     break;
   }
+
   case Cipher::VIGENERE: {
     std::string key; std::cout << "Clave Vigenère > "; std::cin >> key;
     Vignere v(key);
